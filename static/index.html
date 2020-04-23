@@ -1,0 +1,48 @@
+<html>
+  <head>
+    <title>rJSON</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <style>
+    body {
+        font-family: 'Roboto', sans-serif;
+        line-height: 1.4;
+
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 0 10px;
+        word-wrap: break-word;
+
+        text-rendering: optimizeLegibility;
+      }
+    </style>
+  </head>
+
+  <body style="height:100%; margin-top:20px">
+      <h1>rJSON</h1>
+      <p>A simple, fast JSON storage database written in Rust.</p>
+      <p>This is also the debut of dracula.css, a lightweight framework to style your thingy majiggy.</p>
+      <h2>Key</h2>
+      <p> Below is your key. Use this to store/access your JSON.</p>
+      <p id="token"></p>
+      <h2>Commands</h2>
+      <ul>
+        <li>GET /api/{key}/[path] -> returns JSON data if available. Substitute path with context for your JSON. Ex: access {"a" : {...}} with /api/{key}/a, {...} will return. /api/{key} will return {"a": {...}}</li>
+        <li>POST /api/{key}/[path] -> send JSON data to the server. Same path system applies. Note that this overwrites preexisting data</li>
+        <li>DELETE /api/{key}/[path] -> Delete JSON data fro the server. No path deletes the file. Path replaces the relevant field with a Null value. If you request a specific field, and it is Null because of the DELETE, it will return an error.</li>
+      </ul>
+  </body>
+  <script>
+    var makeid = function (length) {
+      var result           = '';
+      var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      var charactersLength = characters.length;
+      for ( var i = 0; i < length; i++ ) {
+          result += characters.charAt(Math.floor(Math.random() * charactersLength));
+      }
+      return result;
+    }
+
+    document.getElementById("token").innerText = makeid(30);
+  </script>
+</html>
