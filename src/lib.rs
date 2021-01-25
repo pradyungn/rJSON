@@ -1,10 +1,10 @@
 use actix_web::{delete, get, post, web, HttpResponse, Responder};
 use serde_json::{Value,json};
-use std::fs;
+use std::fs::{self, read_to_string, File};
 
 #[get("/")]
 pub async fn index() -> impl Responder {
-    let inp = fs::read_to_string("static/index.html").unwrap();
+    let inp = read_to_string("static/index.html").unwrap();
 
     HttpResponse::Ok().body(inp)
 }
@@ -15,7 +15,7 @@ fn cdb(key: &str, path:&str) -> impl Responder {
     }
 
     if path != "" {
-        let k = match fs::read_to_string(format!("db/{}.json", key)){
+        let k = match read_to_string::<_>(format!("db/{}.json", key)){
             Err(_) => return HttpResponse::NotFound().body("Could not find file"),
             Ok(e) => e,
         };
@@ -24,17 +24,17 @@ fn cdb(key: &str, path:&str) -> impl Responder {
         let mut x: &mut Value = &mut d;
 
         let p: Vec<&str> = path.split("/").collect();
-        
+
         for k in p.iter() {
             x = match x.get_mut(&k){
-                None => return HttpResponse::BadRequest().body("Field does not exist in JSON"),
                 Some(c) => c,
-            } 
-        }   
+                None => return HttpResponse::BadRequest().body("Field does not exist in JSON"),
+            }
+        }
 
         x.take();
 
-        let file = match fs::File::create(format!("db/{}.json", key)) {
+        let file = match File::create(format!("db/{}.json", key)) {
             Ok(n) => n,
             Err(_) => return HttpResponse::InternalServerError().body("Could not create file"),
         };
@@ -43,7 +43,7 @@ fn cdb(key: &str, path:&str) -> impl Responder {
             Ok(_) => 0,
             Err(_) => return HttpResponse::InternalServerError().body("Could not write to file"),
         };
-        
+
         return HttpResponse::Ok().body(format!("Success"))
     }
 
@@ -51,13 +51,13 @@ fn cdb(key: &str, path:&str) -> impl Responder {
         Err(_) => HttpResponse::InternalServerError().body("Unable to delete file."),
         Ok(_) => HttpResponse::Ok().body("Success!"),
     }
-} 
+}
 
 fn gdb(key: &str, path: &str) -> impl Responder {
     if key.len() != 30 {
         return HttpResponse::BadRequest().body("Improperly sized key");
     }
-    
+
     let k = match fs::read_to_string(format!("db/{}.json", key)){
         Err(_) => return HttpResponse::NotFound().body("Could not find file"),
         Ok(e) => e,
@@ -67,14 +67,14 @@ fn gdb(key: &str, path: &str) -> impl Responder {
 
     if path != "" {
         let p: Vec<&str> = path.split("/").collect();
-        
+
         for k in p.iter() {
             i = match i.get(&k){
                 None => return HttpResponse::BadRequest().body("Field does not exist in JSON"),
                 Some(c) => c,
-            } 
+            }
         }
-    } 
+    }
 
     match i.as_object() {
         None => HttpResponse::BadRequest().body("Field does not exist in JSON"),
@@ -93,9 +93,9 @@ fn wdb(key: &str, path: &str, info: web::Json<Value>) -> impl Responder {
         for k in p.iter().rev() {
             d = json!({k[..]: d.as_object().unwrap()});
         }
-    } 
+    }
 
-    let file = match fs::File::create(format!("db/{}.json", key)) {
+    let file = match File::create(format!("db/{}.json", key)) {
         Ok(n) => n,
         Err(_) => return HttpResponse::InternalServerError().body("Could not create file"),
     };
@@ -104,7 +104,7 @@ fn wdb(key: &str, path: &str, info: web::Json<Value>) -> impl Responder {
         Ok(_) => 0,
         Err(_) => return HttpResponse::InternalServerError().body("Could not write to file"),
     };
-    
+
     HttpResponse::Ok().body(format!("Success"))
 
 }
